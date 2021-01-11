@@ -61,22 +61,13 @@ int main(int argc, char **argv) {
                        MPI_ERRCODES_IGNORE);
 
         temp_array = malloc(cols / WORKER_NUMBER * sizeof(int));
-
-        for (int workerId = 0; workerId < cols; workerId++){
-            if (rank == workerId) {
                 MPI_Scatter(array, cols / WORKER_NUMBER, MPI_INT, temp_array, cols / WORKER_NUMBER, MPI_INT,
-                            rank == workerId ? MPI_ROOT : MPI_PROC_NULL,
+                            MPI_ROOT,
                             workersChannel);
-            }
-        }
 
         results = malloc(WORKER_NUMBER * sizeof(int));
-        for (int workerId = 0; workerId < cols; workerId++){
-            if (rank == workerId) {
-                MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, rank == workerId ? MPI_ROOT : MPI_PROC_NULL,
+                MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, MPI_ROOT,
                            workersChannel);
-            }
-        }
             
         printf("Partial sum results from workers:");
         show_array(results, WORKER_NUMBER);
