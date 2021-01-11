@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
     char **workerArguments = (char **) malloc(4 * sizeof(char *));
 
     MPI_Comm parentChannel;
-    MPI_Comm workerChannel;
+    MPI_Comm workersChannel;
 
 
     MPI_Init(&argc, &argv);
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
         sprintf(workerArguments[1], "%d", cols / WORKER_NUMBER);
         workerArguments[2] = argv[3];
 
-        MPI_Comm_spawn(WORKER_ID, workerArguments, WORKER_NUMBER, MPI_INFO_NULL, 0, MPI_COMM_SELF, &workerChannel,
+        MPI_Comm_spawn(WORKER_ID, workerArguments, WORKER_NUMBER, MPI_INFO_NULL, 0, MPI_COMM_SELF, &workersChannel,
                        MPI_ERRCODES_IGNORE);
 
         temp_array = malloc(cols / WORKER_NUMBER * sizeof(int));
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
             if (rank == workerId) {
                 MPI_Scatter(array, cols / WORKER_NUMBER, MPI_INT, temp_array, cols / WORKER_NUMBER, MPI_INT,
                             rank == workerId ? MPI_ROOT : MPI_PROC_NULL,
-                            workerChannel);
+                            workersChannel);
             }
         }
 
@@ -73,19 +73,19 @@ int main(int argc, char **argv) {
         for (int workerId = 0; workerId < cols; workerId++){
             if (rank == workerId) {
                 MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, rank == workerId ? MPI_ROOT : MPI_PROC_NULL,
-                           workerChannel);
+                           workersChannel);
             }
         }
             
-
+        printf("Partial sum results from workers:");
         show_array(results, WORKER_NUMBER);
-        totalSum = sum_array(results, cols / WORKER_NUMBER);
+        totalSum = sum_array(results, WORKER_NUMBER);
 
         printf("Final worker sum: %d\n\n", totalSum);
 
         MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, 0, parentChannel);
 
-        MPI_Comm_free(&workerChannel);
+        MPI_Comm_free(&workersChannel);
     }
 
 
