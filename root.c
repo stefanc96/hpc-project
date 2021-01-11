@@ -2,33 +2,49 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int** initialize_matrix(int rows, int cols){
-    int **mat = (int **)malloc(rows * sizeof(int*));
+#define WORKER_ID "worker"
 
-    for(int i = 0; i < rows; i++) {
-        mat[i] = (int *)malloc(cols * sizeof(int));
-        for(int j = 0; j < cols; j++) {
-            mat[i][j] = 2;
-        }
+int *initialize_matrix(int rows, int cols) {
+    int *mat = (int *) malloc(rows * cols * sizeof(int));
+
+    for (int i = 0; i < rows * cols; i++) {
+        mat[i] = i;
     }
 
     return mat;
 }
 
-void print_matrix(int** matrix, int rows, int cols){
-    for(int i = 0; i < rows; i++) {
-        for(int j = 0; j < cols; j++) {
-            printf("%d ", matrix[i][j]);
+int sum_array(const int *array, int size){
+    int sum = 0;
+
+    for (int i = 0; i < size; i++) sum += array[i];
+
+    return sum;
+}
+
+void print_matrix(int *matrix, int rows, int cols) {
+    for (int i = 0; i < rows; i++) {
+        for (int j = 0; j < cols; j++) {
+            printf("%d ", matrix[(i * cols) + j]);
         }
         printf("\n");
     }
 }
 
-int main(int argc, char** argv) {
+int main(int argc, char **argv) {
     int totalSum = 0;
     int rows = atoi(argv[1]);
     int cols = atoi(argv[2]);
-    int** matrix = initialize_matrix(rows, cols);
+    int *results = (int*) malloc(cols * sizeof(int));
+    int *temp_array = (int*) malloc(rows * sizeof(int));
+    char **workerArguments = (char**) malloc(4 * sizeof(char*));
+
+    workerArguments[0] = argv[1];
+    workerArguments[1] = argv[2];
+    workerArguments[2] = argv[3];
+
+    MPI_Comm workerChannel;
+    int *matrix = initialize_matrix(rows, cols);
 
     print_matrix(matrix, rows, cols);
 
@@ -37,6 +53,16 @@ int main(int argc, char** argv) {
     int world;
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world);
-    printf("Hello: rank %d, world: %d\n",rank, world);
+
+    MPI_Comm_spawn(WORKER_ID, workerArguments, rows, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &workerChannel, MPI_ERRCODES_IGNORE);
+
+    MPI_Scatter(matrix, cols, MPI_INT, temp_array, cols, MPI_INT, rank == 0 ? MPI_ROOT : MPI_PROC_NULL, workerChannel);
+
+    MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, rank == 0 ? MPI_ROOT : MPI_PROC_NULL, workerChannel);
+
+    totalSum = sum_array(results, cols);
+    printf("Final sum: %d", totalSum);
+
+    MPI_Comm_free(&workerChannel);
     MPI_Finalize();
 }
