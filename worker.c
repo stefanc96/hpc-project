@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
 
     MPI_Scatter(array, cols, MPI_INT, array, cols, MPI_INT, 0, parentChannel);
 
+    printf("Worker received array: ");
     show_array(array, cols);
 
     printf("Arguments: %d %d %d \n", rows, cols, k);
