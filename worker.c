@@ -21,9 +21,9 @@ int sum_array(const int *array, int size) {
 
 int main(int argc, char **argv) {
     int totalSum = 0;
-    int rows = atoi(argv[1]);
-    int cols = atoi(argv[2]);
-    int k = atoi(argv[3]);
+    int rows = (int)strtol(argv[1], NULL, 10);
+    int cols = (int)strtol(argv[2], NULL, 10);
+    int k = (int)strtol(argv[3], NULL, 10);
     int *results = (int *) malloc(cols * sizeof(int));
     int *array = (int *) malloc(cols * sizeof(int));
     int *temp_array;

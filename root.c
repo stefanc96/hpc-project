@@ -23,6 +23,7 @@ int sum_array(const int *array, int size){
 }
 
 void print_matrix(int *matrix, int rows, int cols) {
+    printf("Initial matrix:\n");
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
             printf("%d ", matrix[(i * cols) + j]);
@@ -33,8 +34,8 @@ void print_matrix(int *matrix, int rows, int cols) {
 
 int main(int argc, char **argv) {
     int totalSum = 0;
-    int rows = atoi(argv[1]);
-    int cols = atoi(argv[2]);
+    int rows = (int)strtol(argv[1], NULL, 10);
+    int cols = (int)strtol(argv[2], NULL, 10);
     int *results = (int*) malloc(cols * sizeof(int));
     int *temp_array = (int*) malloc(rows * sizeof(int));
     char **workerArguments = (char**) malloc(4 * sizeof(char*));
@@ -63,6 +64,5 @@ int main(int argc, char **argv) {
     totalSum = sum_array(results, cols);
     printf("Final sum: %d", totalSum);
 
-    MPI_Comm_free(&workerChannel);
     MPI_Finalize();
 }
