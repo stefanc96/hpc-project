@@ -14,7 +14,7 @@ int *initialize_matrix(int rows, int cols) {
     return mat;
 }
 
-int sum_array(const int *array, int size){
+int sum_array(const int *array, int size) {
     int sum = 0;
 
     for (int i = 0; i < size; i++) sum += array[i];
@@ -34,11 +34,11 @@ void print_matrix(int *matrix, int rows, int cols) {
 
 int main(int argc, char **argv) {
     int totalSum = 0;
-    int rows = (int)strtol(argv[1], NULL, 10);
-    int cols = (int)strtol(argv[2], NULL, 10);
-    int *results = (int*) malloc(cols * sizeof(int));
-    int *temp_array = (int*) malloc(rows * sizeof(int));
-    char **workerArguments = (char**) malloc(4 * sizeof(char*));
+    int rows = (int) strtol(argv[1], NULL, 10);
+    int cols = (int) strtol(argv[2], NULL, 10);
+    int *results = (int *) malloc(cols * sizeof(int));
+    int *temp_array = (int *) malloc(rows * sizeof(int));
+    char **workerArguments = (char **) malloc(4 * sizeof(char *));
 
     workerArguments[0] = argv[1];
     workerArguments[1] = argv[2];
@@ -55,11 +55,12 @@ int main(int argc, char **argv) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &world);
 
-    MPI_Comm_spawn(WORKER_ID, workerArguments, rows, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &workersChannel, MPI_ERRCODES_IGNORE);
+    MPI_Comm_spawn(WORKER_ID, workerArguments, rows, MPI_INFO_NULL, 0, MPI_COMM_WORLD, &workersChannel,
+                   MPI_ERRCODES_IGNORE);
 
-    MPI_Scatter(matrix, cols, MPI_INT, temp_array, cols, MPI_INT, rank == 0 ? MPI_ROOT : MPI_PROC_NULL, workersChannel);
+    MPI_Scatter(matrix, cols, MPI_INT, temp_array, cols, MPI_INT, MPI_ROOT, workersChannel);
 
-    MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, rank == 0 ? MPI_ROOT : MPI_PROC_NULL, workersChannel);
+    MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, MPI_ROOT, workersChannel);
 
     totalSum = sum_array(results, cols);
     printf("Final sum: %d", totalSum);

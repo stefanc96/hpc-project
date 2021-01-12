@@ -21,9 +21,9 @@ int sum_array(const int *array, int size) {
 
 int main(int argc, char **argv) {
     int totalSum = 0;
-    int rows = (int)strtol(argv[1], NULL, 10);
-    int cols = (int)strtol(argv[2], NULL, 10);
-    int k = (int)strtol(argv[3], NULL, 10);
+    int rows = (int) strtol(argv[1], NULL, 10);
+    int cols = (int) strtol(argv[2], NULL, 10);
+    int k = (int) strtol(argv[3], NULL, 10);
     int *results = (int *) malloc(cols * sizeof(int));
     int *array = (int *) malloc(cols * sizeof(int));
     int *temp_array;
@@ -61,14 +61,14 @@ int main(int argc, char **argv) {
                        MPI_ERRCODES_IGNORE);
 
         temp_array = malloc(cols / WORKER_NUMBER * sizeof(int));
-                MPI_Scatter(array, cols / WORKER_NUMBER, MPI_INT, temp_array, cols / WORKER_NUMBER, MPI_INT,
-                            MPI_ROOT,
-                            workersChannel);
+        MPI_Scatter(array, cols / WORKER_NUMBER, MPI_INT, temp_array, cols / WORKER_NUMBER, MPI_INT,
+                    MPI_ROOT,
+                    workersChannel);
 
         results = malloc(WORKER_NUMBER * sizeof(int));
-                MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, MPI_ROOT,
-                           workersChannel);
-            
+        MPI_Gather(&totalSum, 1, MPI_INT, results, 1, MPI_INT, MPI_ROOT,
+                   workersChannel);
+
         printf("Partial sum results from workers:");
         show_array(results, WORKER_NUMBER);
         totalSum = sum_array(results, WORKER_NUMBER);
